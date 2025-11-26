@@ -1,0 +1,52 @@
+{
+  "mcpServers": {
+    "blockscout": {
+      "url": "https://mcp.blockscout.com/mcp",
+      "disabled": true
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest",
+        "--browser-url=http://127.0.0.1:9222"
+      ],
+      "disabled": false
+    },
+    "coinbase-cdp": {
+      "url": "https://docs.cdp.coinbase.com/mcp",
+      "disabled": true
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "disabled": false
+    },
+    "next-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "next-devtools-mcp@latest"
+      ],
+      "disabled": false
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "disabled": true
+    },
+    "tiger": {
+      "command": "tiger",
+      "args": [
+        "mcp",
+        "start"
+      ],
+      "disabled": true
+    }
+  }
+}
