@@ -28,7 +28,16 @@ const nextConfig: NextConfig = {
     ];
   },
   // Exclude packages from server-side bundling - they're browser-only
-  serverExternalPackages: ["@linera/client"],
+  serverExternalPackages: [
+    "@linera/client",
+    "pino",
+    "thread-stream",
+    "pino-pretty",
+    "@walletconnect/universal-provider",
+    "@walletconnect/ethereum-provider",
+  ],
+  // Empty turbopack config to acknowledge we're using turbopack
+  turbopack: {},
 };
 
 export default nextConfig;
