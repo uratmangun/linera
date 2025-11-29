@@ -23,6 +23,9 @@ export default function Home() {
   const providerRef = useRef<LineraProvider | null>(null);
   const [chainConnected, setChainConnected] = useState(false);
   const [appConnected, setAppConnected] = useState(false);
+  const [applicationId, setApplicationId] = useState("");
+  const [targetChainId, setTargetChainId] = useState("");
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Prevent hydration mismatch by waiting for mount
   useEffect(() => {
@@ -69,9 +72,14 @@ export default function Home() {
 
   // Connect to application
   async function handleSetApplication() {
+    if (!applicationId.trim()) {
+      setError("Please enter an Application ID");
+      return;
+    }
     setIsLoading(true);
+    setError(null);
     try {
-      await lineraAdapter.setApplication("99f357923c7e3afe8bfa4355af2d835482f7920cf918eb08ef76a5dd7451177b");
+      await lineraAdapter.setApplication(applicationId.trim());
       await getCount();
       setAppConnected(true);
     } catch (err) {
@@ -118,8 +126,30 @@ export default function Home() {
       await lineraAdapter.queryApplication({
         query: "mutation { increment(value: 1) }",
       });
+      await getCount();
     } catch (err) {
       console.error("Failed to increment:", err);
+      setError(err instanceof Error ? err.message : "Failed to increment");
+    }
+  }
+
+  // Sync counter value to another chain
+  async function handleSync() {
+    if (!targetChainId.trim()) {
+      setError("Please enter a target chain ID to sync to");
+      return;
+    }
+    setIsSyncing(true);
+    setError(null);
+    try {
+      await lineraAdapter.queryApplication({
+        query: `mutation { syncTo(targetChain: "${targetChainId.trim()}") }`,
+      });
+    } catch (err) {
+      console.error("Failed to sync:", err);
+      setError(err instanceof Error ? err.message : "Failed to sync to target chain");
+    } finally {
+      setIsSyncing(false);
     }
   }
 
@@ -183,32 +213,79 @@ export default function Home() {
             )}
 
             {chainConnected && !appConnected && (
-              <button
-                type="button"
-                onClick={handleSetApplication}
-                disabled={isLoading}
-                className="rounded-lg bg-sky-600 px-6 py-3 font-medium text-white transition-colors hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isLoading ? "Connecting…" : "Connect to App"}
-              </button>
+              <div className="w-full space-y-4">
+                <div className="rounded-lg bg-zinc-100 p-4 dark:bg-zinc-800">
+                  <p className="mb-3 text-sm text-zinc-600 dark:text-zinc-400">
+                    Deploy your smart contract to chain <code className="rounded bg-zinc-200 px-1 py-0.5 text-xs dark:bg-zinc-700">{chainId}</code> using the CLI, then enter the Application ID below.
+                  </p>
+                  <label htmlFor="applicationId" className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    Application ID
+                  </label>
+                  <input
+                    id="applicationId"
+                    type="text"
+                    value={applicationId}
+                    onChange={(e) => setApplicationId(e.target.value)}
+                    placeholder="Enter your deployed contract's Application ID"
+                    className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2 font-mono text-sm text-zinc-900 placeholder-zinc-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSetApplication}
+                  disabled={isLoading || !applicationId.trim()}
+                  className="w-full rounded-lg bg-sky-600 px-6 py-3 font-medium text-white transition-colors hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isLoading ? "Connecting…" : "Connect to Application"}
+                </button>
+              </div>
             )}
 
             {chainConnected && appConnected && (
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={getCount}
-                  className="rounded-lg bg-zinc-200 px-6 py-3 font-medium text-zinc-800 transition-colors hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600"
-                >
-                  Get Count
-                </button>
-                <button
-                  type="button"
-                  onClick={handleIncrement}
-                  className="rounded-lg bg-sky-600 px-6 py-3 font-medium text-white transition-colors hover:bg-sky-700"
-                >
-                  Increment
-                </button>
+              <div className="w-full space-y-4">
+                <div className="flex justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={getCount}
+                    className="rounded-lg bg-zinc-200 px-6 py-3 font-medium text-zinc-800 transition-colors hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600"
+                  >
+                    Get Count
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleIncrement}
+                    className="rounded-lg bg-sky-600 px-6 py-3 font-medium text-white transition-colors hover:bg-sky-700"
+                  >
+                    Increment
+                  </button>
+                </div>
+
+                {/* Cross-chain Sync */}
+                <div className="rounded-lg bg-zinc-100 p-4 dark:bg-zinc-800">
+                  <h3 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                    Cross-Chain Sync
+                  </h3>
+                  <p className="mb-3 text-xs text-zinc-500 dark:text-zinc-400">
+                    Sync the counter value to another chain after incrementing.
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={targetChainId}
+                      onChange={(e) => setTargetChainId(e.target.value)}
+                      placeholder="Target Chain ID"
+                      className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm text-zinc-900 placeholder-zinc-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSync}
+                      disabled={isSyncing || !targetChainId.trim()}
+                      className="rounded-lg bg-teal-600 px-4 py-2 font-medium text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isSyncing ? "Syncing…" : "Sync"}
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
