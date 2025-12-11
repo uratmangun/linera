@@ -1,5 +1,5 @@
 ---
-alwaysApply: true
+trigger: always_on
 description: "Never automatically start development servers for web applications"
 ---
 

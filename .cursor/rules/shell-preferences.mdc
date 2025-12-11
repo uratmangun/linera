@@ -1,5 +1,5 @@
 ---
-alwaysApply: true
+trigger: always_on
 description: "Enforces fish shell syntax for all terminal commands and provides conversion patterns from bash"
 ---
 

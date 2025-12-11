@@ -1,5 +1,5 @@
 ---
-alwaysApply: true
+trigger: always_on
 description: "Enforces use of bun as primary package manager with pnpm, yarn, and npm as fallbacks for Node.js dependency management"
 ---
 
